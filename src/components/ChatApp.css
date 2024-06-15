@@ -1,4 +1,3 @@
-
 body,html{
     height: 100%;
     margin: 0;
@@ -243,4 +242,10 @@ body,html{
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
     background: #5454b6;
+}
+@media (min-width: 1200px) {
+    .col-xl-6 {
+        flex: 0 0 auto;
+        width: 65%;
+    }
 }
