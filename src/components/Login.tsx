@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import { WebSocketService, wsService } from '../services/WebSocketService';
 import { Form, Button, Container, Row, Col, Card, InputGroup, Alert } from 'react-bootstrap';
 
@@ -10,6 +10,7 @@ const Login: React.FC = () => {
     const [successMessage, setSuccessMessage] = useState<string | null>(null); // State để lưu thông báo thành công
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
+    const navigate = useNavigate();
 
     // Hiển thị thông báo
     React.useEffect(() => {
@@ -34,6 +35,7 @@ const Login: React.FC = () => {
 
         wsService.sendMessage(loginMessage);
         setSuccessMessage(null);
+        navigate('/home');
     };
 
     return (
