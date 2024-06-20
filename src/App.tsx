@@ -2,6 +2,7 @@ import React from 'react';
 import Login from './components/Login';
 import { Routes, Route} from 'react-router-dom'
 import SignUp from "./components/SignUp";
+import Home from './components/Home';
 
 const App: React.FC = () => {
     return (
@@ -9,8 +10,9 @@ const App: React.FC = () => {
         <div className="App">
             <main>
                 <Routes>
-                    <Route path="/signup" element={<SignUp/>}/>
                     <Route path="/" element={<Login/>}/>
+                    <Route path="/Home" element={<Home/>}/>
+                    <Route path="/SignUp" element={<SignUp/>}/>
                 </Routes>
             </main>
         </div>
