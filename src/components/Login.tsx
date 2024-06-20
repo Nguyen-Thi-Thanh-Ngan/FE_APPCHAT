@@ -1,31 +1,24 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link} from 'react-router-dom'
+import { Routes, Route, Link, useNavigate} from 'react-router-dom'
+// import { useDispatch } from 'react-redux';
 import { WebSocketService } from '../services/WebSocketService';
 import { Form, Button, Container, Row, Col, Card, InputGroup } from 'react-bootstrap';
 
 const wsUrl = 'ws://140.238.54.136:8080/chat/chat';
 const wsService = new WebSocketService(wsUrl);
 
+
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+    // const dispatch = useDispatch();
 
-    const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
 
-        const loginMessage = {
-            action: 'onchat',
-            data: {
-                event: 'LOGIN',
-                data: {
-                    user: username,
-                    pass: password,
-                },
-            },
-        };
-
-        wsService.sendMessage(loginMessage);
+    const handleLogin = () => {
+        wsService.login(username, password);
+        navigate('/home');
     };
 
     return (

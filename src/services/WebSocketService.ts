@@ -1,9 +1,13 @@
 
 export class WebSocketService {
-    private socket: WebSocket;
+    private socket!: WebSocket;
 
     constructor(private url: string) {
-        this.socket = new WebSocket(url);
+        this.createConnection();
+    }
+
+    private createConnection() {
+        this.socket = new WebSocket(this.url);
 
         this.socket.onopen = () => {
             console.log('Đã kết nối WebSocket');
@@ -28,5 +32,17 @@ export class WebSocketService {
         } else {
             console.error('WebSocket chưa mở. Trạng thái:', this.socket.readyState);
         }
+    }
+    login(user: string, pass: string) {
+        this.sendMessage({
+            action: "onchat",
+            data: {
+                event: "LOGIN",
+                data: {
+                    user,
+                    pass
+                }
+            }
+        });
     }
 }
