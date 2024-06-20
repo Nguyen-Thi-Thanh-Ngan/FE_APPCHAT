@@ -1,25 +1,25 @@
+import React, {useState} from 'react';
+import {wsService} from '../services/WebSocketService';
+import {Link, Route, Routes, useNavigate} from 'react-router-dom'; // Import Link từ react-router-dom
 
-import React, { useState } from 'react';
-import { WebSocketService } from '../services/WebSocketService';
-import {Link, Route, Routes} from 'react-router-dom'; // Import Link từ react-router-dom
-import { Form, Button, Container, Row, Col, Card, InputGroup } from 'react-bootstrap';
-
-
-const wsUrl = 'ws://140.238.54.136:8080/chat/chat';
-const wsService = new WebSocketService(wsUrl);
+import {Form, Button, Container, Row, Col, Card, InputGroup, Alert} from 'react-bootstrap';
 
 const SignUp: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>(''); // Thêm state để lưu thông báo lỗi
+    const navigate = useNavigate(); // dùng useNavigate để điều hướng trang
 
-    const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+
+    const handleRegister = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const loginMessage = {
+        // Thực hiện logic đăng ký, ví dụ gửi yêu cầu đăng ký qua WebSocket
+        const registerMessage = {
             action: 'onchat',
             data: {
-                event: 'LOGIN',
+                event: 'REGISTER',
                 data: {
                     user: username,
                     pass: password,
@@ -27,8 +27,23 @@ const SignUp: React.FC = () => {
             },
         };
 
-        wsService.sendMessage(loginMessage);
+        wsService.sendMessage(registerMessage);
+
+        // Chuyển hướng về trang Login sau khi đăng ký thành công
+        wsService.onMessage((message) => {
+            const data = JSON.parse(message.data);
+            if (data.event === 'REGISTER') {
+                if (data.status === 'success') {
+                    // Đăng ký thành công
+                    navigate('/login', {state: {successMessage: 'Đăng ký thành công! Vui lòng đăng nhập.'}});
+                } else if (data.status === 'error') {
+                    // Đăng ký thất bại, hiển thị thông báo lỗi
+                    setErrorMessage('Tài khoản đã tồn tại. Vui lòng chọn tên đăng nhập khác.');
+                }
+            }
+        });
     };
+
 
     return (
         <Container className="d-flex align-items-center justify-content-center login-container">
@@ -45,8 +60,9 @@ const SignUp: React.FC = () => {
                                     height="120"
                                 />
                             </div>
+                            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                             <h2 className="text-center mb-4">Đăng Ký</h2>
-                            <Form onSubmit={handleLogin}>
+                            <Form onSubmit={handleRegister}>
                                 <Form.Group id="username" className="mb-3">
                                     <Form.Label><b>Tên đăng ký</b></Form.Label>
                                     <Form.Control
@@ -80,7 +96,7 @@ const SignUp: React.FC = () => {
                             </Form>
                             <div className="text-center mt-3">
                                 {/* Sử dụng Link để điều hướng đến trang SignUp */}
-                                <Link to="/" className="signup-link">Đăng Nhập</Link>
+                                <Link to="/login" className="signup-link">Đăng Nhập</Link>
                             </div>
                         </Card.Body>
                     </Card>

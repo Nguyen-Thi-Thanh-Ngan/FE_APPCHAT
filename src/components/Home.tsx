@@ -14,8 +14,6 @@ import {
     MDBInputGroup
 } from "mdb-react-ui-kit";
 
-const wsUrl = 'ws://140.238.54.136:8080/chat/chat';
-const wsService = new WebSocketService(wsUrl);
 
 const Home: React.FC = () => {
     return (

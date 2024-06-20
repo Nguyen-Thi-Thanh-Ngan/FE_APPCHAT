@@ -1,23 +1,40 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link, useNavigate} from 'react-router-dom'
-// import { useDispatch } from 'react-redux';
-import { WebSocketService } from '../services/WebSocketService';
-import { Form, Button, Container, Row, Col, Card, InputGroup } from 'react-bootstrap';
-
-const wsUrl = 'ws://140.238.54.136:8080/chat/chat';
-const wsService = new WebSocketService(wsUrl);
-
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
+import { WebSocketService, wsService } from '../services/WebSocketService';
+import { Form, Button, Container, Row, Col, Card, InputGroup, Alert } from 'react-bootstrap';
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null); // State để lưu thông báo thành công
+    const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
+    const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
-    // const dispatch = useDispatch();
 
+    // Hiển thị thông báo
+    React.useEffect(() => {
+        if (state && state.successMessage) {
+            setSuccessMessage(state.successMessage);
+        }
+    }, [state]);
 
-    const handleLogin = () => {
-        wsService.login(username, password);
+    const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const loginMessage = {
+            action: 'onchat',
+            data: {
+                event: 'LOGIN',
+                data: {
+                    user: username,
+                    pass: password,
+                },
+            },
+        };
+
+        wsService.sendMessage(loginMessage);
+        setSuccessMessage(null);
         navigate('/home');
     };
 
@@ -36,6 +53,10 @@ const Login: React.FC = () => {
                                     height="120"
                                 />
                             </div>
+
+                            {/*Hiển thị thông báo thành công nếu có*/}
+                            {/*{successMessage && <p className="text-success">{successMessage}</p>}*/}
+                            {successMessage && <Alert variant="success"  >{successMessage}</Alert>}
                             <h2 className="text-center mb-4">Đăng Nhập</h2>
                             <Form onSubmit={handleLogin}>
                                 <Form.Group id="username" className="mb-3">
