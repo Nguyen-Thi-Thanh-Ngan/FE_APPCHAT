@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {Routes, Route, Link, useNavigate, useLocation} from 'react-router-dom';
-import {WebSocketService, wsService} from '../services/WebSocketService';
+import { useNavigate, useLocation} from 'react-router-dom';
+import { wsService} from '../services/WebSocketService';
 import '../css/homecss.css';
 
 import {
@@ -62,7 +62,6 @@ const Home: React.FC = () => {
                                         <MDBInputGroup className="rounded mb-3">
                                             <input className="form-control rounded" placeholder="Search" type="search"/>
                                             <span className="input-group-text border-0" id="search-addon">
-                                                <MDBIcon fas icon="search"/>
                                             </span>
                                         </MDBInputGroup>
 
