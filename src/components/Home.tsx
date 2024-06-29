@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {Routes, Route, Link} from 'react-router-dom';
-import {WebSocketService} from '../services/WebSocketService';
+import {Routes, Route, Link, useNavigate, useLocation} from 'react-router-dom';
+import {WebSocketService, wsService} from '../services/WebSocketService';
 import '../css/homecss.css';
 
 import {
@@ -13,11 +13,45 @@ import {
     MDBTypography,
     MDBInputGroup
 } from "mdb-react-ui-kit";
+import {Alert} from "react-bootstrap";
 
 
 const Home: React.FC = () => {
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
+    const state = location.state as { successMessage?: string };
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (state && state.successMessage) {
+            setSuccessMessage(state.successMessage);
+        }
+    }, [state]);
+
+    const handleLogout = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const logoutMessage = {
+            "action": "onchat",
+            "data": {
+                "event": "LOGOUT"
+            }
+        }
+
+        wsService.sendMessage(logoutMessage);
+        setSuccessMessage(null);
+        navigate('/login');
+    };
+
+
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
+            {successMessage && <Alert variant="success"  >{successMessage}</Alert>}
+            <form onClick={handleLogout}>
+                <div>
+                    <a className="log_out"><MDBIcon fas icon="sign-out-alt"/></a>
+                </div>
+            </form>
             <MDBRow>
                 <MDBCol md="12">
                     <MDBCard id="chat3" style={{borderRadius: "15px"}}>
@@ -94,7 +128,7 @@ const Home: React.FC = () => {
                                     </div>
                                 </MDBCol>
                                 <MDBCol md="6" lg="7" xl="8">
-                                    <div className="custom-scrollbar">
+                                    <div className="custom-scrollbar chat-content">
                                         <div className="d-flex flex-row justify-content-start">
                                             <img
                                                 src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
@@ -104,9 +138,7 @@ const Home: React.FC = () => {
                                             <div>
                                                 <p className="small p-2 ms-3 mb-1 rounded-3"
                                                    style={{backgroundColor: "#f5f6f7"}}>
-                                                    Lorem ipsum dolor sit amet, consectetur adipiscing
-                                                    elit, sed do eiusmod tempor incididunt ut labore et
-                                                    dolore magna aliqua.
+                                                    Hi!
                                                 </p>
                                                 <p className="small ms-3 mb-3 rounded-3 text-muted float-end">
                                                     12:00 PM | Aug 13
