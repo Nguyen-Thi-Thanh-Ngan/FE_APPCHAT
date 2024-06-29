@@ -46,7 +46,6 @@ const Home: React.FC = () => {
 
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
-            {successMessage && <Alert variant="success"  >{successMessage}</Alert>}
             <form onClick={handleLogout}>
                 <div>
                     <a className="log_out"><MDBIcon fas icon="sign-out-alt"/></a>
