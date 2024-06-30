@@ -7,7 +7,8 @@ const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null); // State để lưu thông báo thành công
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string>('');
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
@@ -34,8 +35,17 @@ const Login: React.FC = () => {
         };
 
         wsService.sendMessage(loginMessage);
-        setSuccessMessage(null);
-        navigate('/home');
+
+        wsService.onMessage((message) => {
+            const data = JSON.parse(message.data);
+            if (data.event === 'LOGIN') {
+                if (data.status === 'success') {
+                    navigate('/home', {state: {successMessage: 'Đăng nhập thành công!'}});
+                } else if (data.status === 'error') {
+                    setErrorMessage('Username hoặc password sai. Vui lòng nhập lại.');
+                }
+            }
+        });
     };
 
     return (
@@ -57,6 +67,7 @@ const Login: React.FC = () => {
                             {/*Hiển thị thông báo thành công nếu có*/}
                             {/*{successMessage && <p className="text-success">{successMessage}</p>}*/}
                             {successMessage && <Alert variant="success"  >{successMessage}</Alert>}
+                            {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
                             <h2 className="text-center mb-4">Đăng Nhập</h2>
                             <Form onSubmit={handleLogin}>
                                 <Form.Group id="username" className="mb-3">
