@@ -66,11 +66,11 @@ const Home: React.FC = () => {
                                             {/*</span>*/}
                                             <span>
                                                      <img
-                                                         src="https://cdn-icons-png.flaticon.com/128/2617/2617956.png"
+                                                         src="https://cdn-icons-png.flaticon.com/128/2161/2161465.png"
                                                          alt=""
                                                          style={{
-                                                             width: '40px',
-                                                             height: '40px',
+                                                             width: '45px',
+                                                             height: '45px',
                                                              marginLeft: '20px'
                                                          }} // Chỉnh kích thước ảnh
                                                         onClick={(event) =>
@@ -79,12 +79,12 @@ const Home: React.FC = () => {
                                                 </span>
                                             <span>
                                                      <img
-                                                         src="https://cdn-icons-png.flaticon.com/128/14812/14812787.png"
+                                                         src="https://cdn-icons-png.flaticon.com/128/7988/7988991.png"
                                                          alt=""
                                                          style={{
-                                                             width: '40px',
-                                                             height: '40px',
-                                                             marginLeft: '20px'
+                                                             width: '60px',
+                                                             height: '60px',
+                                                             marginLeft: '15px'
                                                          }} // Chỉnh kích thước ảnh
                                                      />
                                                 </span>
