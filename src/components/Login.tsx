@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
-import { WebSocketService, wsService } from '../services/WebSocketService';
+import {  Link, useLocation, useNavigate } from 'react-router-dom'
+import {  wsService } from '../services/WebSocketService';
 import { Form, Button, Container, Row, Col, Card, InputGroup, Alert } from 'react-bootstrap';
-import {toast} from "react-toastify";
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
