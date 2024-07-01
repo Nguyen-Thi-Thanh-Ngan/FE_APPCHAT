@@ -1,10 +1,5 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate, useLocation} from 'react-router-dom';
-import {wsService} from '../services/WebSocketService';
-import '../css/homecss.css';
-import {handleLogout} from "./Logout";
-import {handleSearch, handleAddUserChat, useChatState} from "./CreateRoom";
-
 import {
     MDBContainer,
     MDBRow,
@@ -16,21 +11,46 @@ import {
     MDBInputGroup
 } from "mdb-react-ui-kit";
 
+
+import '../css/homecss.css';
+import {handleLogout} from "./Logout";
+import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
+
+
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
 
-    const { successMessage, setSuccessMessage, searchQuery, setSearchQuery, addedMembers, setAddedMembers } = useChatState();
+    const avatars = [
+        "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308891.png",
+        "https://cdn-icons-png.flaticon.com/128/3940/3940404.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308984.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308983.png"
+    ];
+
+    const {
+        successMessage,
+        setSuccessMessage,
+        createRoomQuery,
+        setCreateRoomQuery,
+        addedChatRoom,
+        setAddedChatRoom
+    } = useChatState();
+
     React.useEffect(() => {
         if (state && state.successMessage) {
             setSuccessMessage(state.successMessage);
         }
     }, [state]);
 
+    useEffect(() => {
+        handleGetUserList(setAddedChatRoom);
+    }, [setAddedChatRoom]);
 
     return (
-        <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}} >
+        <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
             <form onClick={(event) => handleLogout(event, setSuccessMessage, navigate)} style={{
                 position: 'absolute',
                 right: '50px', // Khoảng cách từ cạnh phải
@@ -46,9 +66,9 @@ const Home: React.FC = () => {
                 </div>
             </form>
             <MDBRow>
-                <MDBCol md="12" style={{height : '600px'}}>
+                <MDBCol md="12" style={{height: '600px'}}>
                     <MDBCard id="chat3" style={{borderRadius: "15px"}}>
-                        <MDBCardBody style={{height : '600px'}}>
+                        <MDBCardBody style={{height: '600px'}}>
                             <MDBRow>
                                 <MDBCol md="6" lg="5" xl="4" className="mb-4 mb-md-0" style={{
                                     width: '450px', height: '100%px'
@@ -56,9 +76,9 @@ const Home: React.FC = () => {
                                     <div className="p-3">
                                         <MDBInputGroup className="rounded mb-3">
                                             <input className="form-control rounded"
-                                                   value={searchQuery} // Gán giá trị cho ô search
+                                                   value={createRoomQuery} // lưu trữ giá trị của ô tìm kiếm
                                                    onChange={(e) =>
-                                                       handleSearch(e, setSearchQuery)} // Gọi hàm handleSearch
+                                                       handleSearch(e, setCreateRoomQuery)} // setSearchQuery sẽ cập nhật giá trị searchQuery
                                                    placeholder="Thêm"
                                                    type="search"/>
                                             {/*<span className="input-group-text border-0" id="search-addon">*/}
@@ -73,8 +93,8 @@ const Home: React.FC = () => {
                                                              height: '45px',
                                                              marginLeft: '20px'
                                                          }} // Chỉnh kích thước ảnh
-                                                        onClick={(event) =>
-                                                            handleAddUserChat(searchQuery, addedMembers, setAddedMembers, setSearchQuery)}
+                                                         onClick={(event) =>
+                                                             handleCreateRoomChat(createRoomQuery, addedChatRoom, setAddedChatRoom, setCreateRoomQuery)}
                                                      />
                                                 </span>
                                             <span>
@@ -90,18 +110,22 @@ const Home: React.FC = () => {
                                                 </span>
                                         </MDBInputGroup>
 
-                                        <div className="custom-scrollbar">
+                                        <div className="custom-scrollbar"
+                                             style={{maxHeight: '450px', overflowY: 'auto'}}>
                                             <MDBTypography listUnStyled className="mb-0">
-                                                {addedMembers.map((member, index) => (
+                                                {/* Hiển thị danh sách thành viên*/}
+                                                {addedChatRoom.map((room, index) => (
                                                     <li key={index} className="p-2 border-bottom">
-                                                        {/* Hiển thị danh sách thành viên*/}
                                                         {/*// index: số thứ tự thành viên*/}
-                                                        <a href="#!" className="d-flex justify-content-between" style={{textDecorationLine : 'none'}}>
+                                                        <a href="#!" className="d-flex justify-content-between"
+                                                           style={{textDecorationLine: 'none'}}>
                                                             <div className="d-flex flex-row">
                                                                 <div>
                                                                     <img
-                                                                        src="https://cdn-icons-png.flaticon.com/128/4144/4144517.png"
-                                                                        alt="avatar"
+                                                                        src={avatars[index % avatars.length]} // Use modulus to loop through avatars
+                                                                        alt={`Avatar ${index % avatars.length + 1}`}
+                                                                        // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
+                                                                       // alt="avatar"
                                                                         className="d-flex align-self-center me-3 rounded-circle mb-4"
                                                                         width="50"
 
@@ -109,7 +133,9 @@ const Home: React.FC = () => {
                                                                     <span className="badge bg-success badge-dot"></span>
                                                                 </div>
                                                                 <div className="pt-1">
-                                                                    <p className="fw-bold mb-0">{member.name}</p>
+                                                                    <p className="fw-bold mb-0">{room.name}</p>
+                                                                    <p className="text-muted mb-0">Type: {room.type}</p>
+                                                                    {/*<p className="text-muted mb-0">User {index + 1}</p> /!* Numbering users *!/*/}
                                                                 </div>
                                                             </div>
                                                         </a>
@@ -154,9 +180,9 @@ const Home: React.FC = () => {
                                             </p>
                                         </div>
                                         <img
-                                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                                            src="https://cdn-icons-png.flaticon.com/128/706/706830.png"
                                             alt="avatar 1"
-                                            style={{width: "45px", height: "100%"}}
+                                            style={{width: "50px", height: "100%"}}
                                         />
                                     </div>
                                     <div
@@ -173,7 +199,7 @@ const Home: React.FC = () => {
                                             type="text"
                                             className="form-control form-control-lg"
                                             id="exampleFormControlInput2"
-                                            placeholder="Type message"
+                                            placeholder="Nhập tin nhắn..."
                                         />
                                         <a className="ms-1 text-muted" href="#!">
                                             {/*<MDBIcon fas icon="paperclip"/>*/}
