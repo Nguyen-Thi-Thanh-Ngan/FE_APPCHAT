@@ -14,6 +14,7 @@ import {
 import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
+import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
 
 
 const Home: React.FC = () => {
@@ -37,6 +38,21 @@ const Home: React.FC = () => {
         addedChatRoom,
         setAddedChatRoom
     } = useChatState();
+
+    const {
+        successMessage1,
+        setSuccessMessage1,
+        joinRoomQuery,
+        setJoinRoomQuery
+    } = useChatRoomState();
+
+    const [inputValue, setInputValue] = useState('');
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setInputValue(value);
+        handleSearch(e, setInputValue);
+    };
 
     React.useEffect(() => {
         if (state && state.successMessage) {
@@ -75,10 +91,9 @@ const Home: React.FC = () => {
                                     <div className="p-3">
                                         <MDBInputGroup className="rounded mb-3">
                                             <input className="form-control rounded"
-                                                   value={createRoomQuery} // lưu trữ giá trị của ô tìm kiếm
-                                                   onChange={(e) =>
-                                                       handleSearch(e, setCreateRoomQuery)} // setSearchQuery sẽ cập nhật giá trị searchQuery
-                                                   placeholder="Thêm"
+                                                   value={inputValue}
+                                                   onChange={handleInputChange}
+                                                   placeholder="Nhập tên nhóm"
                                                    type="search"/>
                                             {/*<span className="input-group-text border-0" id="search-addon">*/}
                                             {/*    <MDBIcon fas icon="search"/>*/}
@@ -93,7 +108,7 @@ const Home: React.FC = () => {
                                                              marginLeft: '20px'
                                                          }} // Chỉnh kích thước ảnh
                                                          onClick={(event) =>
-                                                             handleCreateRoomChat(createRoomQuery, addedChatRoom, setAddedChatRoom, setCreateRoomQuery)}
+                                                             handleCreateRoomChat(inputValue, addedChatRoom, setAddedChatRoom, setCreateRoomQuery)}
                                                      />
                                                 </span>
                                             <span>
@@ -105,6 +120,7 @@ const Home: React.FC = () => {
                                                              height: '60px',
                                                              marginLeft: '15px'
                                                          }} // Chỉnh kích thước ảnh
+                                                         onClick={()=> handleJoinRoomChat(inputValue, setJoinRoomQuery)}
                                                      />
                                                 </span>
                                         </MDBInputGroup>
