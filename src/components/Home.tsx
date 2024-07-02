@@ -36,7 +36,7 @@ const Home: React.FC = () => {
         createRoomQuery,
         setCreateRoomQuery,
         addedChatRoom,
-        setAddedChatRoom
+        setAddedChatRoom,
     } = useChatState();
 
     React.useEffect(() => {
@@ -48,6 +48,7 @@ const Home: React.FC = () => {
     useEffect(() => {
         handleGetUserList(setAddedChatRoom);
     }, [setAddedChatRoom]);
+
 
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
@@ -91,12 +92,13 @@ const Home: React.FC = () => {
                                                          style={{
                                                              width: '45px',
                                                              height: '45px',
-                                                             marginLeft: '20px'
+                                                             marginLeft: '20px',
+                                                             marginTop: '5px'
                                                          }} // Chỉnh kích thước ảnh
                                                          onClick={(event) =>
                                                              handleCreateRoomChat(createRoomQuery, addedChatRoom, setAddedChatRoom, setCreateRoomQuery)}
                                                      />
-                                                </span>
+                                            </span>
                                             <span>
                                                      <img
                                                          src="https://cdn-icons-png.flaticon.com/128/7988/7988991.png"
@@ -107,7 +109,7 @@ const Home: React.FC = () => {
                                                              marginLeft: '15px'
                                                          }} // Chỉnh kích thước ảnh
                                                      />
-                                                </span>
+                                            </span>
                                         </MDBInputGroup>
 
                                         <div className="custom-scrollbar"
@@ -125,7 +127,7 @@ const Home: React.FC = () => {
                                                                         src={avatars[index % avatars.length]} // Use modulus to loop through avatars
                                                                         alt={`Avatar ${index % avatars.length + 1}`}
                                                                         // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
-                                                                       // alt="avatar"
+                                                                        // alt="avatar"
                                                                         className="d-flex align-self-center me-3 rounded-circle mb-4"
                                                                         width="50"
 

@@ -16,10 +16,8 @@ export const useChatState = () => {
 
     return {
         successMessage, setSuccessMessage,
-        createRoomQuery: createRoomQuery,
-        setCreateRoomQuery: setCreateRoomQuery,
-        addedChatRoom: addedChatRoom,
-        setAddedChatRoom: setAddedChatRoom
+        createRoomQuery, setCreateRoomQuery,
+        addedChatRoom, setAddedChatRoom,
     };
 };
 export const handleSearch = (event: React.ChangeEvent<HTMLInputElement>, setCreateRoomQuery: React.Dispatch<React.SetStateAction<string>>) => {
@@ -49,16 +47,42 @@ export const handleCreateRoomChat = (
         const result = JSON.parse(response.data);
 
         if (result.status === 'success') {
-            const newRoom = {name: result.data.name, type: result.data.type};
+            const newRoom = { name: result.data.name, type: 1 };
 
             setCreateRoomQuery('');
-            setAddedChatRoom([...addedChatRoom, newRoom]); //them roomchat vao mang, cập nhật mảng addedMembers
-            alert('Tạo phòng chat thành công')
+            setAddedChatRoom([...addedChatRoom, newRoom]); // thêm roomchat vào mảng, cập nhật mảng addedChatRoom
+            alert('Tạo phòng chat thành công');
         } else {
-            alert('Phòng chat đã tồn tại');
+            const addUserMessage = {
+                "action": "onchat",
+                "data": {
+                    "event": "SEND_CHAT",
+                    "data": {
+                        "type": "people",
+                        "to": createRoomQuery,
+                        "mes": ""
+                    }
+                }
+            };
+
+            wsService.sendMessage(addUserMessage);
+
+            wsService.onMessage((addUserResponse) => {
+                const addUserResult = JSON.parse(addUserResponse.data);
+
+                if (addUserResult.status === 'error') {
+                    const newUser = { name: createRoomQuery, type: 0 }; // Giả sử type 0 là type của user
+
+                    setCreateRoomQuery('');
+                    setAddedChatRoom([...addedChatRoom, newUser]); // thêm người dùng vào mảng, cập nhật mảng addedChatRoom
+                    alert('Thêm người dùng thành công');
+                }
+            });
         }
     });
 };
+
+
 
 // Hàm này sẽ gửi yêu cầu lấy danh sách phòng chat va hiển thị lên màn hình
 export const getUserList = (callback: (rooms: Room[]) => void) => {
@@ -84,8 +108,10 @@ export const getUserList = (callback: (rooms: Room[]) => void) => {
     });
 };
 
+
 export const handleGetUserList = (setAddedChatRoom: React.Dispatch<React.SetStateAction<Room[]>>) => {
     getUserList((rooms) => {
         setAddedChatRoom(rooms);
     });
 };
+
