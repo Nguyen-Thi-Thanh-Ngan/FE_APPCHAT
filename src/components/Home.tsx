@@ -6,7 +6,6 @@ import {
     MDBCol,
     MDBCard,
     MDBCardBody,
-    MDBIcon,
     MDBTypography,
     MDBInputGroup
 } from "mdb-react-ui-kit";
@@ -208,7 +207,6 @@ const Home: React.FC = () => {
 
                                         </a>
                                         <a className="ms-3 text-muted" href="#!">
-                                            <MDBIcon fas icon="smile"/>
                                             <img src="https://cdn-icons-png.flaticon.com/128/4989/4989500.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>
                                         </a>
