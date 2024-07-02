@@ -40,6 +40,7 @@ const Login: React.FC = () => {
             const data = JSON.parse(message.data);
             if (data.event === 'LOGIN') {
                 if (data.status === 'success') {
+                    alert('Đăng nhập thành công!')
                     navigate('/home', {state: {successMessage: 'Đăng nhập thành công!'}});
                 } else if (data.status === 'error') {
                     setErrorMessage('Username hoặc password sai. Vui lòng nhập lại.');
@@ -49,6 +50,7 @@ const Login: React.FC = () => {
     };
 
     return (
+
         <Container className="d-flex align-items-center justify-content-center login-container">
             <Row className="w-100 justify-content-center">
                 <Col md={10} lg={6}>

@@ -72,14 +72,23 @@ export const getUserList = (callback: (rooms: Room[]) => void) => {
     wsService.sendMessage(getUserListMessage);
 
     wsService.onMessage((response) => {
-        const result = JSON.parse(response.data);
-        if (result.status === 'success') {
-            const rooms = result.data.map((room: any) => ({
-                name: room.name,
-                type: room.type,
-                actionTime: room.actionTime,
-            }));
-            callback(rooms);
+        try {
+            const result = JSON.parse(response.data);
+
+            if (result.status === 'success') {
+                if (Array.isArray(result.data)) {
+                    const rooms = result.data.map((room: any) => ({
+                        name: room.name,
+                        type: room.type,
+                        actionTime: room.actionTime,
+                    }));
+                    callback(rooms);
+                } else {
+                    console.error("result.data is not an array");
+                }
+            }
+        } catch (error) {
+            console.error("Error parsing response:", error);
         }
     });
 };
