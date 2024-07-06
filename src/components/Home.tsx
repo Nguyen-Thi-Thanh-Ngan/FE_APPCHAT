@@ -10,17 +10,20 @@ import {
     MDBInputGroup
 } from "mdb-react-ui-kit";
 
-
 import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
-
+import {getPeopleChatRoom} from "./ChatBox";
 
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
+    const [user, setUser] = useState<{ username: string; avatar: string } | null>(null);
+    const [roomNames, setRoomNames] = useState<string[]>([]);
+    const [userNames, setUserNames] = useState<string[]>([]);
+    const [currentRoom, setCurrentRoom] = useState<string | null>(null);
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
@@ -61,8 +64,29 @@ const Home: React.FC = () => {
     }, [state]);
 
     useEffect(() => {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+
+        const storedRoomNames = localStorage.getItem('roomNames');
+        if (storedRoomNames) {
+            setRoomNames(JSON.parse(storedRoomNames));
+        }
+
+        const storedUserNames = localStorage.getItem('userNames');
+        if (storedUserNames) {
+            setUserNames(JSON.parse(storedUserNames));
+        }
+
         handleGetUserList(setAddedChatRoom);
+
     }, [setAddedChatRoom]);
+
+    const handleRoomClick = (roomName: string) => {
+        setCurrentRoom(roomName); // Cập nhật tên phòng hiện tại
+        getPeopleChatRoom(roomName);
+    };
 
 
     return (
@@ -87,8 +111,18 @@ const Home: React.FC = () => {
                         <MDBCardBody style={{height: '600px'}}>
                             <MDBRow>
                                 <MDBCol md="6" lg="5" xl="4" className="mb-4 mb-md-0" style={{
-                                    width: '450px', height: '100%px'
+                                    width: '450px', height: '80%px'
                                 }}>
+                                    <MDBRow>
+                                        <div style={{display: "flex", height: '35px'}}>
+                                            <div>
+                                                {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
+                                            </div>
+                                            <div style={{marginLeft: '50px', marginTop: '10px'}}>
+                                                {user && <p>{user.username}</p>}
+                                            </div>
+                                        </div>
+                                    </MDBRow>
                                     <div className="p-3">
                                         <MDBInputGroup className="rounded mb-3">
                                             <input className="form-control rounded"
@@ -122,7 +156,7 @@ const Home: React.FC = () => {
                                                              height: '60px',
                                                              marginLeft: '15px'
                                                          }} // Chỉnh kích thước ảnh
-                                                         onClick={()=> handleJoinRoomChat(inputValue, setJoinRoomQuery)}
+                                                         onClick={() => handleJoinRoomChat(inputValue, setJoinRoomQuery)}
                                                      />
                                             </span>
                                         </MDBInputGroup>
@@ -149,7 +183,7 @@ const Home: React.FC = () => {
                                                                     />
                                                                     <span className="badge bg-success badge-dot"></span>
                                                                 </div>
-                                                                <div className="pt-1">
+                                                                <div className="pt-1" onClick={() => handleRoomClick(room.name)}>
                                                                     <p className="fw-bold mb-0">{room.name}</p>
                                                                     <p className="text-muted mb-0">Type: {room.type}</p>
                                                                     {/*<p className="text-muted mb-0">User {index + 1}</p> /!* Numbering users *!/*/}
@@ -165,6 +199,11 @@ const Home: React.FC = () => {
                                 <MDBCol md="6" lg="7" xl="8" style={{
                                     width: '800px'
                                 }}>
+                                    <MDBRow>
+                                        <div style={{height: '20px', fontSize: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                            {currentRoom && <h5>Room: {currentRoom}</h5>}
+                                        </div>
+                                    </MDBRow>
                                     <div className="custom-scrollbar chat-content">
                                         <div className="d-flex flex-row justify-content-start">
                                             <img
@@ -185,33 +224,14 @@ const Home: React.FC = () => {
                                         </div>
                                         {/* Add more chat content as needed */}
                                     </div>
-                                    <div className="d-flex flex-row justify-content-end">
-                                        <div>
-                                            <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                                                Ut enim ad minima veniam, quis nostrum exercitationem
-                                                ullam corporis suscipit laboriosam, nisi ut aliquid ex
-                                                ea commodi consequatur?
-                                            </p>
-                                            <p className="small me-3 mb-3 rounded-3 text-muted">
-                                                12:00 PM | Aug 13
-                                            </p>
-                                        </div>
-                                        <img
-                                            src="https://cdn-icons-png.flaticon.com/128/706/706830.png"
-                                            alt="avatar 1"
-                                            style={{width: "50px", height: "100%"}}
-                                        />
-                                    </div>
                                     <div
                                         className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"
                                         style={{
                                             position: 'absolute', top: '85%', width: '60%'// Khoảng cách từ cạnh trên
                                         }}>
-                                        <img
-                                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                                            alt="avatar 3"
-                                            style={{width: "40px", height: "100%"}}
-                                        />
+                                        <div>
+                                            {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
+                                        </div>
                                         <input
                                             type="text"
                                             className="form-control form-control-lg"

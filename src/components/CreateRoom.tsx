@@ -51,6 +51,11 @@ export const handleCreateRoomChat = (
 
             setCreateRoomQuery('');
             setAddedChatRoom([...addedChatRoom, newRoom]); // thêm roomchat vào mảng, cập nhật mảng addedChatRoom
+
+            const updatedRooms = [...addedChatRoom, newRoom];
+            const roomNames = updatedRooms.map(room => room.name);
+            localStorage.setItem('roomNames', JSON.stringify(roomNames));
+
             alert('Tạo phòng chat thành công');
         } else {
             const addUserMessage = {
@@ -75,6 +80,11 @@ export const handleCreateRoomChat = (
 
                     setCreateRoomQuery('');
                     setAddedChatRoom([...addedChatRoom, newUser]); // thêm người dùng vào mảng, cập nhật mảng addedChatRoom
+
+                    const updatedUsers = [...addedChatRoom, newUser];
+                    const userNames = updatedUsers.map(user => user.name);
+                    localStorage.setItem('userNames', JSON.stringify(userNames));
+
                     alert('Thêm người dùng thành công');
                 }
             });
