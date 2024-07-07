@@ -15,6 +15,16 @@ import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
 import {getPeopleChatRoom} from "./ChatBox";
+import {getRoomChatMessages} from "./GetRoomChat";
+
+interface RoomDetails {
+    id: number;
+    name: string;
+    owner: string;
+    // userList: userList[];
+}
+
+
 
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
@@ -24,6 +34,8 @@ const Home: React.FC = () => {
     const [roomNames, setRoomNames] = useState<string[]>([]);
     const [userNames, setUserNames] = useState<string[]>([]);
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+    const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
+
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
@@ -46,7 +58,8 @@ const Home: React.FC = () => {
         successMessage1,
         setSuccessMessage1,
         joinRoomQuery,
-        setJoinRoomQuery
+        setJoinRoomQuery,
+
     } = useChatRoomState();
 
     const [inputValue, setInputValue] = useState('');
@@ -86,6 +99,9 @@ const Home: React.FC = () => {
     const handleRoomClick = (roomName: string) => {
         setCurrentRoom(roomName); // Cập nhật tên phòng hiện tại
         getPeopleChatRoom(roomName);
+        getRoomChatMessages(roomName, 1, (details) => {
+            setRoomDetails(details);
+        });
     };
 
 
@@ -104,6 +120,14 @@ const Home: React.FC = () => {
                         height: '40px'
                     }}/>
                 </div>
+                <div>
+                    {roomDetails && (
+                        <div style={{fontSize: '20px'}}>
+                            <p>ID: {roomDetails.id}</p>
+                            <p>Chủ phòng: {roomDetails.owner}</p>
+                        </div>
+                    )}
+                </div>
             </form>
             <MDBRow>
                 <MDBCol md="12" style={{height: '600px'}}>
@@ -115,17 +139,20 @@ const Home: React.FC = () => {
                                 }}>
                                     <MDBRow>
                                         <div style={{display: "flex", height: '35px'}}>
-                                            <div>
-                                                {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
+                                            <div style={{marginLeft: '10px', marginTop: '10px'}}>
+                                               <p>Xin chào</p>
                                             </div>
-                                            <div style={{marginLeft: '50px', marginTop: '10px'}}>
+                                            <div style={{marginLeft: '5px', marginTop: '10px', fontWeight: 'bolder'}}>
                                                 {user && <p>{user.username}</p>}
+                                            </div>
+                                            <div style={{marginLeft: '5px'}}>
+                                                {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
                                             </div>
                                         </div>
                                     </MDBRow>
                                     <div className="p-3">
                                         <MDBInputGroup className="rounded mb-3">
-                                            <input className="form-control rounded"
+                                        <input className="form-control rounded"
                                                    value={inputValue}
                                                    onChange={handleInputChange}
                                                    placeholder="Nhập tên nhóm"
@@ -183,9 +210,12 @@ const Home: React.FC = () => {
                                                                     />
                                                                     <span className="badge bg-success badge-dot"></span>
                                                                 </div>
-                                                                <div className="pt-1" onClick={() => handleRoomClick(room.name)}>
+                                                                <div className="pt-1"
+                                                                     onClick={() => handleRoomClick(room.name)}>
                                                                     <p className="fw-bold mb-0">{room.name}</p>
-                                                                    <p className="text-muted mb-0">Type: {room.type}</p>
+                                                                    <p className="text-muted mb-0">
+                                                                        {room.type === 0 ? 'Người dùng' : room.type === 1 ? 'Nhóm' : 'Unknown'}
+                                                                    </p>
                                                                     {/*<p className="text-muted mb-0">User {index + 1}</p> /!* Numbering users *!/*/}
                                                                 </div>
                                                             </div>
