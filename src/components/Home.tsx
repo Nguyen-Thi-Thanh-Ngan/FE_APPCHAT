@@ -17,15 +17,26 @@ import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
 import {getPeopleChatRoom} from "./ChatBox";
 import {getRoomChatMessages} from "./GetRoomChat";
 
+interface userList {
+    id: number;
+    name: string;
+    type: number;
+}
+
 interface RoomDetails {
     id: number;
     name: string;
     owner: string;
-    // userList: userList[];
+    userList: userList[];
+    chatData: chatData[];
 }
 
-
-
+interface chatData {
+    id: number;
+    name: string;
+    mes: string;
+    createAt: string;
+}
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
@@ -120,14 +131,21 @@ const Home: React.FC = () => {
                         height: '40px'
                     }}/>
                 </div>
-                <div>
-                    {roomDetails && (
-                        <div style={{fontSize: '20px'}}>
-                            <p>ID: {roomDetails.id}</p>
-                            <p>Chủ phòng: {roomDetails.owner}</p>
-                        </div>
-                    )}
-                </div>
+                {/*<div>*/}
+                {/*    {roomDetails && (*/}
+                {/*        <div style={{fontSize: '20px'}}>*/}
+                {/*            <p>ID: {roomDetails.id}</p>*/}
+                {/*            <p>Chủ phòng: {roomDetails.owner}</p>*/}
+                {/*            <h3>User List:</h3>*/}
+                {/*            <ul>*/}
+                {/*                {roomDetails.userList.map((user) => (*/}
+                {/*                    <li key={user.id}>{user.name}</li>*/}
+                {/*                ))}*/}
+                {/*            </ul>*/}
+                {/*        </div>*/}
+
+                {/*    )}*/}
+                {/*</div>*/}
             </form>
             <MDBRow>
                 <MDBCol md="12" style={{height: '600px'}}>
@@ -227,32 +245,66 @@ const Home: React.FC = () => {
                                     </div>
                                 </MDBCol>
                                 <MDBCol md="6" lg="7" xl="8" style={{
-                                    width: '800px'
+                                    width: '800px', maxHeight: '490px', overflowY: 'auto'
                                 }}>
                                     <MDBRow>
-                                        <div style={{height: '20px', fontSize: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                        <div style={{
+                                            height: '20px',
+                                            fontSize: '3px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
                                             {currentRoom && <h5>Room: {currentRoom}</h5>}
                                         </div>
                                     </MDBRow>
+                                    {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
-                                        <div className="d-flex flex-row justify-content-start">
-                                            <img
-                                                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                                                alt="avatar 1"
-                                                style={{width: "45px", height: "100%"}}
-                                            />
-                                            <div>
-                                                <p className="small p-2 ms-3 mb-1 rounded-3"
-                                                   style={{backgroundColor: "#f5f6f7"}}>
-                                                    Hi!
-                                                </p>
-                                                <p className="small ms-3 mb-3 rounded-3 text-muted float-end"
-                                                   style={{width: "100%"}}>
-                                                    12:00 PM | Aug 13
-                                                </p>
+                                        {roomDetails?.chatData.map((message, index) => (
+
+                                            <div key={index} className={`d-flex flex-row ${message.name === user?.username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                                {message.name !== user?.username && (
+                                                    // Nếu tin nhắn không phải của người dùng hiện tại thì hiển thị hiển thị avatar của người gửi bên trái.
+                                                    <div style={{
+                                                        marginTop: '-20px',
+                                                        fontSize: '12px',
+                                                        height: '100px',
+                                                        fontWeight: 'bold'
+                                                    }}>
+                                                        <span>{message.name}</span> <br/>
+                                                        <img
+                                                            src={avatars[index % avatars.length]} // Use modulus to loop through avatars
+                                                            alt={`Avatar ${index % avatars.length + 1}`}
+                                                            // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
+                                                            // alt="avatar"
+                                                            className="d-flex align-self-center me-3 rounded-circle mb-4"
+                                                            width="40"
+
+                                                        />
+                                                    </div>
+
+
+                                                )}
+
+                                                <div>
+
+                                                    <p className={`small p-2 ${message.name === user?.username ? 'me-3 mb-1 text-white rounded-3 bg-primary' : 'ms-3 mb-1 rounded-3'}`}
+                                                       style={{backgroundColor: message.name !== user?.username ? '#f5f6f7' : undefined}}>
+                                                        {message.mes}
+                                                    </p>
+                                                    <p className={`small ${message.name === user?.username ? 'me-3 mb-3 text-muted' : 'ms-3 mb-3 text-muted float-end'}`}>
+                                                        {message.createAt}
+                                                    </p>
+                                                </div>
+                                                {message.name === user?.username && (
+                                                    // Nếu tin nhắn của người dùng hiện tại thì hiển thị avatar của người dùng bên phải.
+                                                    <div>
+                                                        {user && <img src={user.avatar} alt="Avatar" width="40"
+                                                                      height="40"/>}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                        {/* Add more chat content as needed */}
+                                        ))}
                                     </div>
                                     <div
                                         className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"

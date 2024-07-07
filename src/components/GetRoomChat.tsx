@@ -10,7 +10,15 @@ interface RoomDetails {
     id: number;
     name: string;
     owner: string;
-    // userList: userList[];
+    userList: userList[];
+    chatData: chatData[];
+}
+
+interface chatData {
+    id: number;
+    name: string;
+    mes: string;
+    createAt: string;
 }
 
 export const getRoomChatMessages = (roomName: string, page: number, callback: (roomDetails: RoomDetails) => void) => {
@@ -35,11 +43,17 @@ export const getRoomChatMessages = (roomName: string, page: number, callback: (r
                 id: result.data.id,
                 name: result.data.name,
                 owner: result.data.own,
-                // userList: result.data.userList.map((user: any) => ({
-                //     id: user.id,
-                //     name: user.name,
-                //     type: 0 // Assuming type 0 for users in this case
-                // }))
+                userList: Array.isArray(result.data.userList) ? result.data.userList.map((user: any) => ({
+                    id: user.id,
+                    name: user.name,
+                    type: user.type || 0 // Assuming type 0 for users in this case if not specified
+                })) : [],
+                chatData: Array.isArray(result.data.chatData) ? result.data.chatData.map((message: any) => ({
+                    id: message.id,
+                    name: message.name,
+                    mes: message.mes,
+                    createAt: message.createAt
+                })) : []
             };
             callback(roomDetails);
         } else {
