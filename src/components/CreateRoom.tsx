@@ -57,37 +57,18 @@ export const handleCreateRoomChat = (
             localStorage.setItem('roomNames', JSON.stringify(roomNames));
 
             alert('Tạo phòng chat thành công');
-        } else {
-            const addUserMessage = {
-                "action": "onchat",
-                "data": {
-                    "event": "SEND_CHAT",
-                    "data": {
-                        "type": "people",
-                        "to": createRoomQuery,
-                        "mes": ""
-                    }
-                }
-            };
+        } else if (result.status === 'error'){
 
-            wsService.sendMessage(addUserMessage);
+            const newUser = { name: createRoomQuery, type: 0 };
 
-            wsService.onMessage((addUserResponse) => {
-                const addUserResult = JSON.parse(addUserResponse.data);
+            setCreateRoomQuery('');
+            setAddedChatRoom([...addedChatRoom, newUser]);
 
-                if (addUserResult.status === 'error') {
-                    const newUser = { name: createRoomQuery, type: 0 }; // Giả sử type 0 là type của user
+            const updatedUsers = [...addedChatRoom, newUser];
+            const userNames = updatedUsers.map(user => user.name);
+            localStorage.setItem('userNames', JSON.stringify(userNames));
 
-                    setCreateRoomQuery('');
-                    setAddedChatRoom([...addedChatRoom, newUser]); // thêm người dùng vào mảng, cập nhật mảng addedChatRoom
-
-                    const updatedUsers = [...addedChatRoom, newUser];
-                    const userNames = updatedUsers.map(user => user.name);
-                    localStorage.setItem('userNames', JSON.stringify(userNames));
-
-                    alert('Thêm người dùng thành công');
-                }
-            });
+            alert('Thêm người chat thành công.');
         }
     });
 };
