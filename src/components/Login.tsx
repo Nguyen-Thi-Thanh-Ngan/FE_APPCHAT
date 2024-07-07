@@ -3,6 +3,11 @@ import {  Link, useLocation, useNavigate } from 'react-router-dom'
 import {  wsService } from '../services/WebSocketService';
 import { Form, Button, Container, Row, Col, Card, InputGroup, Alert } from 'react-bootstrap';
 
+interface User {
+    username: string;
+    avatar: String;
+}
+
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -12,6 +17,14 @@ const Login: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
+
+    const avatars = [
+        "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308891.png",
+        "https://cdn-icons-png.flaticon.com/128/3940/3940404.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308984.png",
+        "https://cdn-icons-png.flaticon.com/128/9308/9308983.png"
+    ];
 
     // Hiển thị thông báo
     React.useEffect(() => {
@@ -40,8 +53,15 @@ const Login: React.FC = () => {
             const data = JSON.parse(message.data);
             if (data.event === 'LOGIN') {
                 if (data.status === 'success') {
+
                     alert('Đăng nhập thành công!')
+
+                    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+                    const user: User = { username: username, avatar: randomAvatar };
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+
                     navigate('/home', {state: {successMessage: 'Đăng nhập thành công!'}});
+
                 } else if (data.status === 'error') {
                     setErrorMessage('Username hoặc password sai. Vui lòng nhập lại.');
                 }
