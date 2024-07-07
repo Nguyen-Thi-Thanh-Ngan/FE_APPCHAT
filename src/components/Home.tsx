@@ -14,16 +14,14 @@ import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
-import {getPeopleChatRoom} from "./ChatBox";
+import {getPeopleChatRoom, usePeopleChatState} from "./ChatBox";
 
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
     const [user, setUser] = useState<{ username: string; avatar: string } | null>(null);
-    const [roomNames, setRoomNames] = useState<string[]>([]);
-    const [userNames, setUserNames] = useState<string[]>([]);
-    const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+    const [chatMessages, setChatMessages] = useState<{ text: string; timestamp: string; sender: string }[]>([]);
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
@@ -49,12 +47,29 @@ const Home: React.FC = () => {
         setJoinRoomQuery
     } = useChatRoomState();
 
+    const {
+        roomNames,
+        setRoomNames,
+        userNames,
+        setUserNames,
+        currentRoom,
+        setCurrentRoom,
+        error,
+        setError
+    } = usePeopleChatState();
+
     const [inputValue, setInputValue] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setInputValue(value);
         handleSearch(e, setInputValue);
+    };
+
+    const handleInputMessage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setMessage(value);
     };
 
     React.useEffect(() => {
@@ -85,8 +100,24 @@ const Home: React.FC = () => {
 
     const handleRoomClick = (roomName: string) => {
         setCurrentRoom(roomName); // Cập nhật tên phòng hiện tại
-        getPeopleChatRoom(roomName);
     };
+
+    const handleSendChat = () =>{
+        if (!currentRoom) {
+            setError("Hãy chọn người bạn muốn gửi tin nhắn.");
+            return;
+        }
+        if (message.trim() !== '') {
+            getPeopleChatRoom(currentRoom, message);
+            const newMessage = {
+                text: message,
+                timestamp: new Date().toLocaleString(),
+                sender: user?.username || 'Anonymous'
+            };
+            setChatMessages([...chatMessages, newMessage]);
+            setMessage('');
+        }
+    }
 
 
     return (
@@ -209,7 +240,7 @@ const Home: React.FC = () => {
                                             <img
                                                 src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
                                                 alt="avatar 1"
-                                                style={{width: "45px", height: "100%"}}
+                                                style={{width: "40px", height: "100%"}}
                                             />
                                             <div>
                                                 <p className="small p-2 ms-3 mb-1 rounded-3"
@@ -222,7 +253,22 @@ const Home: React.FC = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        {/* Add more chat content as needed */}
+                                        {chatMessages.map((msg, index) => (
+                                            <div key={index} className="d-flex flex-row justify-content-end">
+                                                <div>
+                                                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary"
+                                                       style={{backgroundColor: "#f5f6f7"}}>
+                                                        {msg.text}
+                                                    </p>
+                                                    <p className="small me-3 mb-3 rounded-3 text-muted"
+                                                       style={{width: "100%"}}>
+                                                        {msg.timestamp}
+                                                    </p>
+                                                </div>
+                                                {user && <img src={user.avatar} alt="Avatar" width="40px" height="100%"/>}
+                                            </div>
+
+                                        ))}
                                     </div>
                                     <div
                                         className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"
@@ -236,6 +282,8 @@ const Home: React.FC = () => {
                                             type="text"
                                             className="form-control form-control-lg"
                                             id="exampleFormControlInput2"
+                                            value={message}
+                                            onChange={handleInputMessage}
                                             placeholder="Nhập tin nhắn..."
                                         />
                                         <a className="ms-1 text-muted" href="#!">
@@ -248,7 +296,7 @@ const Home: React.FC = () => {
                                             <img src="https://cdn-icons-png.flaticon.com/128/4989/4989500.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>
                                         </a>
-                                        <a className="ms-3" href="#!">
+                                        <a className="ms-3" href="#!" onClick={handleSendChat}>
                                             {/*<MDBIcon fas icon="paper-plane"/>*/}
                                             <img src="https://cdn-icons-png.flaticon.com/128/16273/16273684.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>
