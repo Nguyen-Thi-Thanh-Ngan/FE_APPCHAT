@@ -23,8 +23,6 @@ export const getPeopleChatRoom = (getPeopleQuery: string, page: number, callback
     wsService.sendMessage(getPeopleMessage);
 
     wsService.onMessage((response) => {
-
-        try {
             const result = JSON.parse(response.data);
 
             if (result.status === 'success') {
@@ -36,13 +34,10 @@ export const getPeopleChatRoom = (getPeopleQuery: string, page: number, callback
                         createAt: message.createAt
                     })) : [];
                     callback(chatData);
-                }  else {
-                    console.error("result.data is not an array");
+
                 }
             }
-        } catch (error) {
-            console.error("Error parsing response:", error);
-        }
+
     });
 
 };

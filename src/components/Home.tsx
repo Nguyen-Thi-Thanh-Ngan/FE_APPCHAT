@@ -16,6 +16,8 @@ import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} fro
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
 import {getPeopleChatRoom} from "./GetPeopleChat";
 import {getRoomChatMessages} from "./GetRoomChat";
+import {sendChatToPeople} from "./SendChatToPeople";
+import {sendChatToRoom} from "./SendChatToRoom";
 
 interface userList {
     id: number;
@@ -37,6 +39,7 @@ interface chatData {
     mes: string;
     createAt: string;
 }
+
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
@@ -47,6 +50,11 @@ const Home: React.FC = () => {
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
     const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
     const [peopleChatData, setPeopleChatData] = useState<chatData[]>([]);
+    const [chatMessages, setChatMessages] = useState<{ text: string; timestamp: string; sender: string }[]>([]);
+    const [messageValue, setMessageValue] = useState('');
+    const [inputValue, setInputValue] = useState('');
+    const [roomType, setRoomType] = useState<number | null>(null);
+
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
@@ -73,7 +81,11 @@ const Home: React.FC = () => {
 
     } = useChatRoomState();
 
-    const [inputValue, setInputValue] = useState('');
+
+    // const handleInputMessage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = e.target.value;
+    //     setMessageValue(value);
+    // };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -108,20 +120,37 @@ const Home: React.FC = () => {
     }, [setAddedChatRoom]);
 
     const handleRoomClick = (roomName: string, roomType: number) => {
-        setCurrentRoom(roomName); // Cập nhật tên phòng hiện tại
+        setRoomType(roomType); // Lưu trữ loại phòng
+        setCurrentRoom(roomName); // Cập nhật phòng hiện tại
+        // Cập nhật tên phòng hiện tại
         if (roomType === 0) {
             getPeopleChatRoom(roomName, 1, (data) => {
                 setPeopleChatData(data);
+
+
             });
         } else if (roomType === 1) {
             getRoomChatMessages(roomName, 1, (details) => {
                 setRoomDetails(details);
                 setPeopleChatData(details.chatData);
+
+
             });
         }
     };
+    const handleSendMessage = () => {
+        if (currentRoom && messageValue.trim() !== '') {
+            if (currentRoom && messageValue.trim() !== '') {
+                if (roomType === 1) {
+                    sendChatToRoom(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
+                } else if (roomType === 0) {
+                    sendChatToPeople(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
+                }
+            }
 
-
+        }
+    };
+    // Hàm kiểm tra xem loại là room hay people
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
             <form onClick={(event) => handleLogout(event, setSuccessMessage, navigate)} style={{
@@ -138,19 +167,19 @@ const Home: React.FC = () => {
                     }}/>
                 </div>
                 <div>
-                    {roomDetails && (
-                        <div style={{fontSize: '20px'}}>
-                            <p>ID: {roomDetails.id}</p>
-                            <p>Chủ phòng: {roomDetails.owner}</p>
-                            <h3>User List:</h3>
-                            <ul>
-                                {roomDetails.userList.map((user) => (
-                                    <li key={user.id}>{user.name}</li>
-                                ))}
-                            </ul>
-                        </div>
+                    {/*{roomDetails && (*/}
+                    {/*    <div style={{fontSize: '20px'}}>*/}
+                    {/*        <p>ID: {roomDetails.id}</p>*/}
+                    {/*        <p>Chủ phòng: {roomDetails.owner}</p>*/}
+                    {/*        <h3>User List:</h3>*/}
+                    {/*        <ul>*/}
+                    {/*            {roomDetails.userList.map((user) => (*/}
+                    {/*                <li key={user.id}>{user.name}</li>*/}
+                    {/*            ))}*/}
+                    {/*        </ul>*/}
+                    {/*    </div>*/}
 
-                    )}
+                    {/*)}*/}
                 </div>
             </form>
             <MDBRow>
@@ -164,7 +193,7 @@ const Home: React.FC = () => {
                                     <MDBRow>
                                         <div style={{display: "flex", height: '35px'}}>
                                             <div style={{marginLeft: '10px', marginTop: '10px'}}>
-                                               <p>Xin chào</p>
+                                                <p>Xin chào</p>
                                             </div>
                                             <div style={{marginLeft: '5px', marginTop: '10px', fontWeight: 'bolder'}}>
                                                 {user && <p>{user.username}</p>}
@@ -176,7 +205,7 @@ const Home: React.FC = () => {
                                     </MDBRow>
                                     <div className="p-3">
                                         <MDBInputGroup className="rounded mb-3">
-                                        <input className="form-control rounded"
+                                            <input className="form-control rounded"
                                                    value={inputValue}
                                                    onChange={handleInputChange}
                                                    placeholder="Nhập tên nhóm"
@@ -259,16 +288,18 @@ const Home: React.FC = () => {
                                             fontSize: '3px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
+                                            marginTop: '10px'
                                         }}>
-                                            {currentRoom && <h5>Room: {currentRoom}</h5>}
+                                            {currentRoom && <h5> {currentRoom}</h5>}
                                         </div>
                                     </MDBRow>
                                     {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
-                                        {peopleChatData?.map((message, index) => (
-
-                                            <div key={index} className={`d-flex flex-row ${message.name === user?.username ? 'justify-content-end' : 'justify-content-start'}`}>
+                                        {peopleChatData?.slice().reverse().map((message, index) => (
+                                        // dao chieu mang de hien thi tin nhan moi nhat o duoi
+                                            <div key={index}
+                                                 className={`d-flex flex-row ${message.name === user?.username ? 'justify-content-end' : 'justify-content-start'}`}>
                                                 {message.name !== user?.username && (
                                                     // Nếu tin nhắn không phải của người dùng hiện tại thì hiển thị hiển thị avatar của người gửi bên trái.
                                                     <div style={{
@@ -324,6 +355,8 @@ const Home: React.FC = () => {
                                             type="text"
                                             className="form-control form-control-lg"
                                             id="exampleFormControlInput2"
+                                            value={messageValue}
+                                            onChange={(e) => setMessageValue(e.target.value)}
                                             placeholder="Nhập tin nhắn..."
                                         />
                                         <a className="ms-1 text-muted" href="#!">
@@ -336,8 +369,7 @@ const Home: React.FC = () => {
                                             <img src="https://cdn-icons-png.flaticon.com/128/4989/4989500.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>
                                         </a>
-                                        <a className="ms-3" href="#!">
-                                            {/*<MDBIcon fas icon="paper-plane"/>*/}
+                                        <a className="ms-3" href="#!" onClick={handleSendMessage}>
                                             <img src="https://cdn-icons-png.flaticon.com/128/16273/16273684.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>
                                         </a>

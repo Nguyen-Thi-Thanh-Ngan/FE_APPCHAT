@@ -17,6 +17,7 @@ interface RoomDetails {
 interface chatData {
     id: number;
     name: string;
+    type: number;
     mes: string;
     createAt: string;
 }
@@ -51,6 +52,7 @@ export const getRoomChatMessages = (roomName: string, page: number, callback: (r
                 chatData: Array.isArray(result.data.chatData) ? result.data.chatData.map((message: any) => ({
                     id: message.id,
                     name: message.name,
+                    type: message.type || 1, // Assuming type 0 for messages in this case if not specified
                     mes: message.mes,
                     createAt: message.createAt
                 })) : []
