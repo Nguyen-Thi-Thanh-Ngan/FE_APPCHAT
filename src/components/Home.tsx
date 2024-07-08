@@ -14,7 +14,7 @@ import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
-import {getPeopleChatRoom} from "./ChatBox";
+import {getPeopleChatRoom} from "./GetPeopleChat";
 import {getRoomChatMessages} from "./GetRoomChat";
 
 interface userList {
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
     const [userNames, setUserNames] = useState<string[]>([]);
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
     const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
-
+    const [peopleChatData, setPeopleChatData] = useState<chatData[]>([]);
 
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
@@ -107,12 +107,18 @@ const Home: React.FC = () => {
 
     }, [setAddedChatRoom]);
 
-    const handleRoomClick = (roomName: string) => {
+    const handleRoomClick = (roomName: string, roomType: number) => {
         setCurrentRoom(roomName); // Cập nhật tên phòng hiện tại
-        getPeopleChatRoom(roomName);
-        getRoomChatMessages(roomName, 1, (details) => {
-            setRoomDetails(details);
-        });
+        if (roomType === 0) {
+            getPeopleChatRoom(roomName, 1, (data) => {
+                setPeopleChatData(data);
+            });
+        } else if (roomType === 1) {
+            getRoomChatMessages(roomName, 1, (details) => {
+                setRoomDetails(details);
+                setPeopleChatData(details.chatData);
+            });
+        }
     };
 
 
@@ -131,21 +137,21 @@ const Home: React.FC = () => {
                         height: '40px'
                     }}/>
                 </div>
-                {/*<div>*/}
-                {/*    {roomDetails && (*/}
-                {/*        <div style={{fontSize: '20px'}}>*/}
-                {/*            <p>ID: {roomDetails.id}</p>*/}
-                {/*            <p>Chủ phòng: {roomDetails.owner}</p>*/}
-                {/*            <h3>User List:</h3>*/}
-                {/*            <ul>*/}
-                {/*                {roomDetails.userList.map((user) => (*/}
-                {/*                    <li key={user.id}>{user.name}</li>*/}
-                {/*                ))}*/}
-                {/*            </ul>*/}
-                {/*        </div>*/}
+                <div>
+                    {roomDetails && (
+                        <div style={{fontSize: '20px'}}>
+                            <p>ID: {roomDetails.id}</p>
+                            <p>Chủ phòng: {roomDetails.owner}</p>
+                            <h3>User List:</h3>
+                            <ul>
+                                {roomDetails.userList.map((user) => (
+                                    <li key={user.id}>{user.name}</li>
+                                ))}
+                            </ul>
+                        </div>
 
-                {/*    )}*/}
-                {/*</div>*/}
+                    )}
+                </div>
             </form>
             <MDBRow>
                 <MDBCol md="12" style={{height: '600px'}}>
@@ -229,7 +235,7 @@ const Home: React.FC = () => {
                                                                     <span className="badge bg-success badge-dot"></span>
                                                                 </div>
                                                                 <div className="pt-1"
-                                                                     onClick={() => handleRoomClick(room.name)}>
+                                                                     onClick={() => handleRoomClick(room.name, room.type)}>
                                                                     <p className="fw-bold mb-0">{room.name}</p>
                                                                     <p className="text-muted mb-0">
                                                                         {room.type === 0 ? 'Người dùng' : room.type === 1 ? 'Nhóm' : 'Unknown'}
@@ -260,7 +266,7 @@ const Home: React.FC = () => {
                                     </MDBRow>
                                     {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
-                                        {roomDetails?.chatData.map((message, index) => (
+                                        {peopleChatData?.map((message, index) => (
 
                                             <div key={index} className={`d-flex flex-row ${message.name === user?.username ? 'justify-content-end' : 'justify-content-start'}`}>
                                                 {message.name !== user?.username && (
