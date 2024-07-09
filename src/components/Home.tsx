@@ -9,7 +9,6 @@ import {
     MDBTypography,
     MDBInputGroup
 } from "mdb-react-ui-kit";
-import Popup from 'reactjs-popup';
 import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
@@ -40,7 +39,6 @@ interface chatData {
     mes: string;
     createAt: string;
 }
-
 
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
@@ -151,7 +149,7 @@ const Home: React.FC = () => {
                     });
                 }
             }
-        }, 1000);
+        }, 2500);
 
         return () => clearInterval(interval);
     }, [currentRoom, roomType]);
@@ -177,7 +175,6 @@ const Home: React.FC = () => {
         }
     };
     const handleSendMessage = () => {
-        if (currentRoom && messageValue.trim() !== '') {
             if (currentRoom && messageValue.trim() !== '') {
                 if (roomType === 1) {
                     sendChatToRoom(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
@@ -185,8 +182,6 @@ const Home: React.FC = () => {
                     sendChatToPeople(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
                 }
             }
-
-        }
     };
 
 
@@ -217,7 +212,7 @@ const Home: React.FC = () => {
                                     width: '450px', height: '80%px'
                                 }}>
                                     <MDBRow>
-                                        <div style={{display: "flex", height: '35px'}}>
+                                    <div style={{display: "flex", height: '35px'}}>
                                             <div style={{marginLeft: '10px', marginTop: '10px'}}>
                                                 <p>Xin chào</p>
                                             </div>
@@ -318,16 +313,8 @@ const Home: React.FC = () => {
                                             marginTop: '10px'
                                         }}>
                                             {currentRoom && <h5> {currentRoom}</h5>}
-                                            {/*<img style={{*/}
-                                            {/*    height: '30px',*/}
-                                            {/*    width: '30px',*/}
-                                            {/*    marginLeft: '10px',*/}
-                                            {/*    marginTop: '-10px'*/}
-                                            {/*}}*/}
-                                            {/*     src="https://cdn-icons-png.flaticon.com/128/545/545775.png"*/}
-                                            {/*     alt="infor"*/}
-                                            {/*/>*/}
                                         </div>
+
                                     </MDBRow>
 
                                     {/* Danh sách tin nhắn */}
@@ -347,7 +334,7 @@ const Home: React.FC = () => {
                                                         <span>{message.name}</span> <br/>
                                                         <img
                                                             src={getUserAvatar(message.name)} // Use modulus to loop through avatars
-                                                            alt={`Avatar ${index % avatars.length + 1}`}
+                                                            alt={`Avatar of ${message.name}`}
                                                             // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
                                                             // alt="avatar"
                                                             className="d-flex align-self-center me-3 rounded-circle mb-4"
