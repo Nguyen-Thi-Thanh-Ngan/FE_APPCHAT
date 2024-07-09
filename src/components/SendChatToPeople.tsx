@@ -58,9 +58,7 @@ export const sendChatToPeople = (
             };
 
             setPeopleChatData([...peopleChatData, newMessage]);
-            getPeopleChatRoom(getPeopleQuery, 1, message => {
-                setPeopleChatData(message);
-            });
+
 
         }
     });

@@ -9,7 +9,7 @@ import {
     MDBTypography,
     MDBInputGroup
 } from "mdb-react-ui-kit";
-
+import Popup from 'reactjs-popup';
 import '../css/homecss.css';
 import {handleLogout} from "./Logout";
 import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
@@ -18,6 +18,7 @@ import {getPeopleChatRoom} from "./GetPeopleChat";
 import {getRoomChatMessages} from "./GetRoomChat";
 import {sendChatToPeople} from "./SendChatToPeople";
 import {sendChatToRoom} from "./SendChatToRoom";
+
 
 interface userList {
     id: number;
@@ -39,6 +40,7 @@ interface chatData {
     mes: string;
     createAt: string;
 }
+
 
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
@@ -64,6 +66,22 @@ const Home: React.FC = () => {
         "https://cdn-icons-png.flaticon.com/128/9308/9308983.png"
     ];
 
+// Hàm băm đơn giản để gán avatar dựa trên tên người dùng
+    const hashCode = (str: string) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = (hash << 5) - hash + char;
+            hash |= 0; // Chuyển đổi thành 32bit integer
+        }
+        return hash;
+    };
+
+    const getUserAvatar = (name: string | undefined): string | undefined => {
+        if (!name) return undefined;
+        const index = Math.abs(hashCode(name)) % avatars.length;
+        return avatars[index];
+    };
     const {
         successMessage,
         setSuccessMessage,
@@ -118,6 +136,26 @@ const Home: React.FC = () => {
         handleGetUserList(setAddedChatRoom);
 
     }, [setAddedChatRoom]);
+    useEffect(() => {
+        // Polling dung de lay tin nhan moi
+        const interval = setInterval(() => {
+            if (currentRoom && roomType !== null) {
+                if (roomType === 1) {
+                    getRoomChatMessages(currentRoom, 1, (details) => {
+                        setRoomDetails(details);
+                        setPeopleChatData(details.chatData);
+                    });
+                } else if (roomType === 0) {
+                    getPeopleChatRoom(currentRoom, 1, (data) => {
+                        setPeopleChatData(data);
+                    });
+                }
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [currentRoom, roomType]);
+
 
     const handleRoomClick = (roomName: string, roomType: number) => {
         setRoomType(roomType); // Lưu trữ loại phòng
@@ -150,6 +188,8 @@ const Home: React.FC = () => {
 
         }
     };
+
+
     // Hàm kiểm tra xem loại là room hay people
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
@@ -166,21 +206,7 @@ const Home: React.FC = () => {
                         height: '40px'
                     }}/>
                 </div>
-                <div>
-                    {/*{roomDetails && (*/}
-                    {/*    <div style={{fontSize: '20px'}}>*/}
-                    {/*        <p>ID: {roomDetails.id}</p>*/}
-                    {/*        <p>Chủ phòng: {roomDetails.owner}</p>*/}
-                    {/*        <h3>User List:</h3>*/}
-                    {/*        <ul>*/}
-                    {/*            {roomDetails.userList.map((user) => (*/}
-                    {/*                <li key={user.id}>{user.name}</li>*/}
-                    {/*            ))}*/}
-                    {/*        </ul>*/}
-                    {/*    </div>*/}
 
-                    {/*)}*/}
-                </div>
             </form>
             <MDBRow>
                 <MDBCol md="12" style={{height: '600px'}}>
@@ -253,8 +279,8 @@ const Home: React.FC = () => {
                                                             <div className="d-flex flex-row">
                                                                 <div>
                                                                     <img
-                                                                        src={avatars[index % avatars.length]} // Use modulus to loop through avatars
-                                                                        alt={`Avatar ${index % avatars.length + 1}`}
+                                                                        src={getUserAvatar(room.name)} // Use modulus to loop through avatars
+                                                                        alt={`Avatar of ${room.name}`}
                                                                         // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
                                                                         // alt="avatar"
                                                                         className="d-flex align-self-center me-3 rounded-circle mb-4"
@@ -292,12 +318,22 @@ const Home: React.FC = () => {
                                             marginTop: '10px'
                                         }}>
                                             {currentRoom && <h5> {currentRoom}</h5>}
+                                            {/*<img style={{*/}
+                                            {/*    height: '30px',*/}
+                                            {/*    width: '30px',*/}
+                                            {/*    marginLeft: '10px',*/}
+                                            {/*    marginTop: '-10px'*/}
+                                            {/*}}*/}
+                                            {/*     src="https://cdn-icons-png.flaticon.com/128/545/545775.png"*/}
+                                            {/*     alt="infor"*/}
+                                            {/*/>*/}
                                         </div>
                                     </MDBRow>
+
                                     {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
                                         {peopleChatData?.slice().reverse().map((message, index) => (
-                                        // dao chieu mang de hien thi tin nhan moi nhat o duoi
+                                            // dao chieu mang de hien thi tin nhan moi nhat o duoi
                                             <div key={index}
                                                  className={`d-flex flex-row ${message.name === user?.username ? 'justify-content-end' : 'justify-content-start'}`}>
                                                 {message.name !== user?.username && (
@@ -310,7 +346,7 @@ const Home: React.FC = () => {
                                                     }}>
                                                         <span>{message.name}</span> <br/>
                                                         <img
-                                                            src={avatars[index % avatars.length]} // Use modulus to loop through avatars
+                                                            src={getUserAvatar(message.name)} // Use modulus to loop through avatars
                                                             alt={`Avatar ${index % avatars.length + 1}`}
                                                             // src={getRandomAvatar()} // Gọi hàm để lấy URL ngẫu nhiên từ mảng avatars
                                                             // alt="avatar"
@@ -357,6 +393,11 @@ const Home: React.FC = () => {
                                             id="exampleFormControlInput2"
                                             value={messageValue}
                                             onChange={(e) => setMessageValue(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleSendMessage();
+                                                }
+                                            }}
                                             placeholder="Nhập tin nhắn..."
                                         />
                                         <a className="ms-1 text-muted" href="#!">

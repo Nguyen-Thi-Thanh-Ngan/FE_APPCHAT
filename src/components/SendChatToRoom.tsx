@@ -66,10 +66,6 @@ export const sendChatToRoom = (
             };
 
             setPeopleChatData([...peopleChatData, newMessage]);
-            getRoomChatMessages(getPeopleQuery, 1, roomDetails => {
-                setPeopleChatData(roomDetails.chatData);
-            });
-
         }
     });
 };

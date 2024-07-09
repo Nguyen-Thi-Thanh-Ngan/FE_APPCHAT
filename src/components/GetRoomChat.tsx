@@ -47,12 +47,12 @@ export const getRoomChatMessages = (roomName: string, page: number, callback: (r
                 userList: Array.isArray(result.data.userList) ? result.data.userList.map((user: any) => ({
                     id: user.id,
                     name: user.name,
-                    type: user.type || 0 // Assuming type 0 for users in this case if not specified
+                    type: user.type || 0
                 })) : [],
                 chatData: Array.isArray(result.data.chatData) ? result.data.chatData.map((message: any) => ({
                     id: message.id,
                     name: message.name,
-                    type: message.type || 1, // Assuming type 0 for messages in this case if not specified
+                    type: message.type || 1,
                     mes: message.mes,
                     createAt: message.createAt
                 })) : []
