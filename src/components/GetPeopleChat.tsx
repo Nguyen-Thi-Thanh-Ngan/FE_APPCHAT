@@ -23,20 +23,20 @@ export const getPeopleChatRoom = (getPeopleQuery: string, page: number, callback
     wsService.sendMessage(getPeopleMessage);
 
     wsService.onMessage((response) => {
-            const result = JSON.parse(response.data);
+        const result = JSON.parse(response.data);
 
+        if (result.status === 'success') {
             if (result.status === 'success') {
-                if (result.status === 'success') {
-                    const chatData = Array.isArray(result.data) ? result.data.map((message: any) => ({
-                        id: message.id,
-                        name: message.name,
-                        mes: message.mes,
-                        createAt: message.createAt
-                    })) : [];
-                    callback(chatData);
+                const chatData = Array.isArray(result.data) ? result.data.map((message: any) => ({
+                    id: message.id,
+                    name: message.name,
+                    mes: decodeURIComponent(message.mes),
+                    createAt: message.createAt
+                })) : [];
+                callback(chatData);
 
-                }
             }
+        }
 
     });
 

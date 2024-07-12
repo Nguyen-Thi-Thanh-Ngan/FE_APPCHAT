@@ -12,6 +12,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "bootstrap": "^5.3.3",
+    "emoji-picker-react": "^4.11.1",
     "jquery": "^3.7.1",
     "mdb-react-ui-kit": "^8.0.0",
     "react": "^18.3.1",

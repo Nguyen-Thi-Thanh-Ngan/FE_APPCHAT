@@ -48,7 +48,7 @@ export const sendChatToRoom = (
                     data: {
                         type: 'room',
                         to: getPeopleQuery,
-                        mes: messageValue,
+                        mes: encodeURIComponent(messageValue),
                     },
                 },
             };
@@ -61,7 +61,7 @@ export const sendChatToRoom = (
             const newMessage: ChatData = {
                 id: result.data.chatData.id,
                 name: result.data.chatData.name,
-                mes: result.data.chatData.mes,
+                mes: decodeURIComponent(result.data.chatData.mes),
                 createAt: result.data.chatData.createAt,
             };
 
