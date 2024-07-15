@@ -51,7 +51,6 @@ const Home: React.FC = () => {
     const [inputValue, setInputValue] = useState('');
     const [roomType, setRoomType] = useState<number | null>(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [emoji, setEmoji] = useState('');
 
     // Hàm xử lý khi emoji được chọn
     const onEmojiClick = (event: any) => {
@@ -159,6 +158,8 @@ const Home: React.FC = () => {
     }, [currentRoom, roomType]);
 
 
+    const [isUserOnline, setIsUserOnline] = useState(false); // State to track user's online status
+
     const handleRoomClick = (roomName: string, roomType: number) => {
         setRoomType(roomType); // Lưu trữ loại phòng
         setCurrentRoom(roomName); // Cập nhật phòng hiện tại
@@ -167,14 +168,19 @@ const Home: React.FC = () => {
             getPeopleChatRoom(roomName, 1, (data) => {
                 setPeopleChatData(data);
 
+                checkUserStatus(roomName, (isOnline) => {
+                    setIsUserOnline(isOnline);
+                });
+
 
             });
         } else if (roomType === 1) {
             getRoomChatMessages(roomName, 1, (details) => {
                 setRoomDetails(details);
                 setPeopleChatData(details.chatData);
-
-
+                checkUserStatus(roomName, (isOnline) => {
+                    setIsUserOnline(isOnline);
+                });
             });
         }
     };
@@ -188,27 +194,6 @@ const Home: React.FC = () => {
         }
     };
 
-    const [userOnlineStatus, setUserOnlineStatus] = useState<{ [key: string]: boolean }>({});
-
-    useEffect(() => {
-        // Iterate through each room to check online status
-        addedChatRoom.forEach((room, index) => {
-            checkUserStatus(room.name, (isOnline) => {
-                setUserOnlineStatus(prevStatus => ({
-                    ...prevStatus,
-                    [room.name]: isOnline
-                }));
-            });
-        });
-    }, [addedChatRoom]);
-
-    const getUserStatusText = (userName: string) => {
-        if (userOnlineStatus[userName]) {
-            return <span className="text-success"> - Đang online</span>;
-        } else {
-            return <span className="text-muted"> - Offline</span>;
-        }
-    };
 
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
@@ -246,6 +231,8 @@ const Home: React.FC = () => {
                                             <div style={{marginLeft: '5px'}}>
                                                 {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
                                             </div>
+
+
                                         </div>
                                     </MDBRow>
                                     <div className="p-3">
@@ -305,12 +292,6 @@ const Home: React.FC = () => {
                                                                         className="d-flex align-self-center me-3 rounded-circle mb-4"
                                                                         width="50"
                                                                     />
-                                                                    {/* Display online status indicator */}
-                                                                    {userOnlineStatus[room.name] ? (
-                                                                        <span className="badge bg-success badge-dot"></span>
-                                                                    ) : (
-                                                                        <span className="badge bg-secondary badge-dot"></span>
-                                                                    )}
 
                                                                 </div>
 
@@ -321,8 +302,10 @@ const Home: React.FC = () => {
                                                                         {room.type === 0 ? 'Người dùng' : room.type === 1 ? 'Nhóm' : 'Unknown'}
                                                                     </p>
                                                                     {/*<p className="text-muted mb-0">User {index + 1}</p> /!* Numbering users *!/*/}
-                                                                    {/* Display online status text */}
-                                                                    {getUserStatusText(room.name)}
+                                                                    {/*{userStatuses[room.name] &&*/}
+                                                                    {/*    <span className="badge bg-success">Đang hoạt động</span>}*/}
+
+
                                                                 </div>
                                                             </div>
                                                         </a>
@@ -342,13 +325,21 @@ const Home: React.FC = () => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            marginTop: '10px'
+                                            marginTop: '5px',
                                         }}>
                                             {currentRoom && <h5> {currentRoom}</h5>}
                                         </div>
 
                                     </MDBRow>
-
+                                    <MDBRow className="justify-content-center" style={{marginBottom: '20px'}}>
+                                        {isUserOnline ? (
+                                            <span className="badge bg-success"
+                                                  style={{width: '150px'}}>Đang hoạt động</span>
+                                        ) : (
+                                            <span className="badge bg-danger"
+                                                  style={{width: '150px'}}>Offline</span>
+                                        )}
+                                    </MDBRow>
                                     {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
                                         {peopleChatData?.slice().reverse().map((message, index) => (
@@ -430,20 +421,22 @@ const Home: React.FC = () => {
                                                 className="emoji-icon"
                                                 style={{width: '30px', height: '30px'}}
                                                 src="https://icons.getbootstrap.com/assets/icons/emoji-smile.svg"
-                                                onClick={() => setShowEmojiPicker(val => !val)} />
+                                                onClick={() => setShowEmojiPicker(val => !val)}/>
 
-                                            {showEmojiPicker && <EmojiPicker  emojiStyle={EmojiStyle.NATIVE} onEmojiClick={onEmojiClick} style={{
-                                                position: 'absolute',
-                                                bottom: '50px', // Dịch chuyển picker lên cao hơn
-                                                right: '0', // Đẩy picker sang bên phải
-                                                border: '1px solid #ccc', // Viền
-                                                backgroundColor: '#fff', // Màu nền
-                                                boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)', // Đổ bóng
-                                                borderRadius: '8px', // Bo góc
-                                                zIndex: '9999', // Z-index để picker hiển thị trên các phần tử khác
-                                            }}
+                                            {showEmojiPicker &&
+                                                <EmojiPicker emojiStyle={EmojiStyle.NATIVE} onEmojiClick={onEmojiClick}
+                                                             style={{
+                                                                 position: 'absolute',
+                                                                 bottom: '50px', // Dịch chuyển picker lên cao hơn
+                                                                 right: '0', // Đẩy picker sang bên phải
+                                                                 border: '1px solid #ccc', // Viền
+                                                                 backgroundColor: '#fff', // Màu nền
+                                                                 boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)', // Đổ bóng
+                                                                 borderRadius: '8px', // Bo góc
+                                                                 zIndex: '9999', // Z-index để picker hiển thị trên các phần tử khác
+                                                             }}
 
-                                            />}
+                                                />}
                                         </a>
 
                                         <a className="ms-3" href="#!" onClick={handleSendMessage}>
