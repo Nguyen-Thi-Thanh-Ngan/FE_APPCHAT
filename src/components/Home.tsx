@@ -13,7 +13,7 @@ import {getRoomChatMessages} from "./GetRoomChat";
 import {sendChatToPeople} from "./SendChatToPeople";
 import {sendChatToRoom} from "./SendChatToRoom";
 import {checkUserStatus} from "./CheckUserStatus";
-
+import {wsService} from '../services/WebSocketService';
 
 interface userList {
     id: number;
@@ -36,11 +36,18 @@ interface chatData {
     createAt: string;
 }
 
+interface User {
+    username: string;
+    avatar: string;
+    code: string;
+}
+
+
 const Home: React.FC = () => {
     const location = useLocation(); // dùng useLocation để lấy thông tin từ trang trước
     const state = location.state as { successMessage?: string };
     const navigate = useNavigate();
-    const [user, setUser] = useState<{ username: string; avatar: string } | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [roomNames, setRoomNames] = useState<string[]>([]);
     const [userNames, setUserNames] = useState<string[]>([]);
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
@@ -137,6 +144,84 @@ const Home: React.FC = () => {
         handleGetUserList(setAddedChatRoom);
 
     }, [setAddedChatRoom]);
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+        // Chuẩn bị dữ liệu cần thiết trước khi unload/reload trang
+        const savedUserLoginData = localStorage.getItem('currentUser');
+        const storedRoomNames = localStorage.getItem('roomNames');
+        const storedUserNames = localStorage.getItem('userNames');
+
+        if (savedUserLoginData) {
+            // Lưu trữ dữ liệu người dùng hiện tại
+            const user = JSON.parse(savedUserLoginData);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+
+        if (storedRoomNames) {
+            // Lưu trữ tên các phòng
+            const roomNames = JSON.parse(storedRoomNames);
+            localStorage.setItem('roomNames', JSON.stringify(roomNames));
+        }
+
+        if (storedUserNames) {
+            // Lưu trữ tên các người dùng
+            const userNames = JSON.parse(storedUserNames);
+            localStorage.setItem('userNames', JSON.stringify(userNames));
+        }
+
+        wsService.close();
+    };
+
+    const handleUnload = (event: Event) => {
+        const savedUserLoginData = localStorage.getItem('currentUser');
+        if (savedUserLoginData) {
+            const user: User = JSON.parse(savedUserLoginData);
+            console.log(user.username, user.code);
+
+            const reLoginMessage = {
+                action: 'onchat',
+                data: {
+                    event: 'RE_LOGIN',
+                    data: {
+                        user: user.username,
+                        code: user.code
+                    },
+                },
+            };
+            wsService.sendMessage(reLoginMessage);
+            console.log("sent Success");
+
+            wsService.onMessage((message) => {
+                const data = JSON.parse(message.data);
+                if (data.event === 'RE_LOGIN') {
+                    if (data.event === 'ACTION_NOT_EXIT' && data.status === 'error') {
+                        console.error('Chat Error:', data.mes);
+                    } else {
+                        if (data.status === 'success') {
+                            setUser(user);
+                            console.log("ReLogin success");
+                        } else {
+                            console.log("ReLogin failed");
+                            navigate('/login');
+                        }
+                    }
+                }
+            });
+
+            event.preventDefault();
+        }
+    }
+
+    useEffect(() => {
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('unload', handleUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('unload', handleUnload);
+        };
+    }, []);
+
     useEffect(() => {
         // Polling dung de lay tin nhan moi
         const interval = setInterval(() => {

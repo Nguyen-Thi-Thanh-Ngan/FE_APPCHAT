@@ -55,6 +55,12 @@ export class WebSocketService {
         }
         this.connect();
     }
+    close() {
+        if (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING) {
+            this.socket.close();
+        }
+    }
+
 }
 
 const wsUrl = 'ws://140.238.54.136:8080/chat/chat';

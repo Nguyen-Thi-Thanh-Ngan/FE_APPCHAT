@@ -5,7 +5,8 @@ import { Form, Button, Container, Row, Col, Card, InputGroup, Alert } from 'reac
 
 interface User {
     username: string;
-    avatar: String;
+    avatar: string;
+    code: string;
 }
 
 const Login: React.FC = () => {
@@ -54,11 +55,18 @@ const Login: React.FC = () => {
             if (data.event === 'LOGIN') {
                 if (data.status === 'success') {
 
+                    const reLoginCode = data.data.RE_LOGIN_CODE;
+
                     alert('Đăng nhập thành công!')
 
                     const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
-                    const user: User = { username: username, avatar: randomAvatar };
+                    const user: User = {
+                        username: username,
+                        avatar: randomAvatar,
+                        code: reLoginCode,
+                    };
                     localStorage.setItem('currentUser', JSON.stringify(user));
+                    console.log(user.username, user.code);
 
                     navigate('/home', {state: {successMessage: 'Đăng nhập thành công!'}});
 
