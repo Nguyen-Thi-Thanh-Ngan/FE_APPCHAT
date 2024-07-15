@@ -53,7 +53,7 @@ export const getRoomChatMessages = (roomName: string, page: number, callback: (r
                     id: message.id,
                     name: message.name,
                     type: message.type || 1,
-                    mes: message.mes,
+                    mes: decodeURIComponent(message.mes),
                     createAt: message.createAt
                 })) : []
             };

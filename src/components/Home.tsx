@@ -1,22 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {useNavigate, useLocation} from 'react-router-dom';
-import {
-    MDBContainer,
-    MDBRow,
-    MDBCol,
-    MDBCard,
-    MDBCardBody,
-    MDBTypography,
-    MDBInputGroup
-} from "mdb-react-ui-kit";
+import {useLocation, useNavigate} from 'react-router-dom';
+import {MDBCard, MDBCardBody, MDBCol, MDBContainer, MDBInputGroup, MDBRow, MDBTypography} from "mdb-react-ui-kit";
+
+import EmojiPicker, {EmojiStyle} from 'emoji-picker-react';
+
 import '../css/homecss.css';
 import {handleLogout} from "./Logout";
-import {handleSearch, handleCreateRoomChat, useChatState, handleGetUserList} from "./CreateRoom";
+import {handleCreateRoomChat, handleGetUserList, handleSearch, useChatState} from "./CreateRoom";
 import {handleJoinRoomChat, useChatRoomState} from "./JoinRoom";
 import {getPeopleChatRoom} from "./GetPeopleChat";
 import {getRoomChatMessages} from "./GetRoomChat";
 import {sendChatToPeople} from "./SendChatToPeople";
 import {sendChatToRoom} from "./SendChatToRoom";
+import {checkUserStatus} from "./CheckUserStatus";
 
 
 interface userList {
@@ -54,8 +50,15 @@ const Home: React.FC = () => {
     const [messageValue, setMessageValue] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [roomType, setRoomType] = useState<number | null>(null);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+    // Hàm xử lý khi emoji được chọn
+    const onEmojiClick = (event: any) => {
+        console.log("Selected Emoji Object:", event); // Kiểm tra giá trị của emojiObject
 
+        setMessageValue((prevMessage => prevMessage + event.emoji)); // Truy cập đúng thuộc tính emoji
+
+    }
     const avatars = [
         "https://cdn-icons-png.flaticon.com/128/9308/9308979.png",
         "https://cdn-icons-png.flaticon.com/128/9308/9308891.png",
@@ -155,6 +158,8 @@ const Home: React.FC = () => {
     }, [currentRoom, roomType]);
 
 
+    const [isUserOnline, setIsUserOnline] = useState(false); // State to track user's online status
+
     const handleRoomClick = (roomName: string, roomType: number) => {
         setRoomType(roomType); // Lưu trữ loại phòng
         setCurrentRoom(roomName); // Cập nhật phòng hiện tại
@@ -163,29 +168,33 @@ const Home: React.FC = () => {
             getPeopleChatRoom(roomName, 1, (data) => {
                 setPeopleChatData(data);
 
+                checkUserStatus(roomName, (isOnline) => {
+                    setIsUserOnline(isOnline);
+                });
+
 
             });
         } else if (roomType === 1) {
             getRoomChatMessages(roomName, 1, (details) => {
                 setRoomDetails(details);
                 setPeopleChatData(details.chatData);
-
-
+                checkUserStatus(roomName, (isOnline) => {
+                    setIsUserOnline(isOnline);
+                });
             });
         }
     };
     const handleSendMessage = () => {
-            if (currentRoom && messageValue.trim() !== '') {
-                if (roomType === 1) {
-                    sendChatToRoom(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
-                } else if (roomType === 0) {
-                    sendChatToPeople(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
-                }
+        if (currentRoom && messageValue.trim() !== '') {
+            if (roomType === 1) {
+                sendChatToRoom(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
+            } else if (roomType === 0) {
+                sendChatToPeople(currentRoom, messageValue, setPeopleChatData, peopleChatData, setMessageValue);
             }
+        }
     };
 
 
-    // Hàm kiểm tra xem loại là room hay people
     return (
         <MDBContainer fluid className="py-5" style={{backgroundColor: "#CDC4F9"}}>
             <form onClick={(event) => handleLogout(event, setSuccessMessage, navigate)} style={{
@@ -212,7 +221,7 @@ const Home: React.FC = () => {
                                     width: '450px', height: '80%px'
                                 }}>
                                     <MDBRow>
-                                    <div style={{display: "flex", height: '35px'}}>
+                                        <div style={{display: "flex", height: '35px'}}>
                                             <div style={{marginLeft: '10px', marginTop: '10px'}}>
                                                 <p>Xin chào</p>
                                             </div>
@@ -222,6 +231,8 @@ const Home: React.FC = () => {
                                             <div style={{marginLeft: '5px'}}>
                                                 {user && <img src={user.avatar} alt="Avatar" width="40" height="40"/>}
                                             </div>
+
+
                                         </div>
                                     </MDBRow>
                                     <div className="p-3">
@@ -280,10 +291,10 @@ const Home: React.FC = () => {
                                                                         // alt="avatar"
                                                                         className="d-flex align-self-center me-3 rounded-circle mb-4"
                                                                         width="50"
-
                                                                     />
-                                                                    <span className="badge bg-success badge-dot"></span>
+
                                                                 </div>
+
                                                                 <div className="pt-1"
                                                                      onClick={() => handleRoomClick(room.name, room.type)}>
                                                                     <p className="fw-bold mb-0">{room.name}</p>
@@ -291,6 +302,10 @@ const Home: React.FC = () => {
                                                                         {room.type === 0 ? 'Người dùng' : room.type === 1 ? 'Nhóm' : 'Unknown'}
                                                                     </p>
                                                                     {/*<p className="text-muted mb-0">User {index + 1}</p> /!* Numbering users *!/*/}
+                                                                    {/*{userStatuses[room.name] &&*/}
+                                                                    {/*    <span className="badge bg-success">Đang hoạt động</span>}*/}
+
+
                                                                 </div>
                                                             </div>
                                                         </a>
@@ -310,13 +325,21 @@ const Home: React.FC = () => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            marginTop: '10px'
+                                            marginTop: '5px',
                                         }}>
                                             {currentRoom && <h5> {currentRoom}</h5>}
                                         </div>
 
                                     </MDBRow>
-
+                                    <MDBRow className="justify-content-center" style={{marginBottom: '20px'}}>
+                                        {isUserOnline ? (
+                                            <span className="badge bg-success"
+                                                  style={{width: '150px'}}>Đang hoạt động</span>
+                                        ) : (
+                                            <span className="badge bg-danger"
+                                                  style={{width: '150px'}}>Offline</span>
+                                        )}
+                                    </MDBRow>
                                     {/* Danh sách tin nhắn */}
                                     <div className="custom-scrollbar chat-content">
                                         {peopleChatData?.slice().reverse().map((message, index) => (
@@ -394,9 +417,28 @@ const Home: React.FC = () => {
 
                                         </a>
                                         <a className="ms-3 text-muted" href="#!">
-                                            <img src="https://cdn-icons-png.flaticon.com/128/4989/4989500.png" alt=""
-                                                 style={{width: '30px', height: '30px'}}/>
+                                            <img
+                                                className="emoji-icon"
+                                                style={{width: '30px', height: '30px'}}
+                                                src="https://icons.getbootstrap.com/assets/icons/emoji-smile.svg"
+                                                onClick={() => setShowEmojiPicker(val => !val)}/>
+
+                                            {showEmojiPicker &&
+                                                <EmojiPicker emojiStyle={EmojiStyle.NATIVE} onEmojiClick={onEmojiClick}
+                                                             style={{
+                                                                 position: 'absolute',
+                                                                 bottom: '50px', // Dịch chuyển picker lên cao hơn
+                                                                 right: '0', // Đẩy picker sang bên phải
+                                                                 border: '1px solid #ccc', // Viền
+                                                                 backgroundColor: '#fff', // Màu nền
+                                                                 boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)', // Đổ bóng
+                                                                 borderRadius: '8px', // Bo góc
+                                                                 zIndex: '9999', // Z-index để picker hiển thị trên các phần tử khác
+                                                             }}
+
+                                                />}
                                         </a>
+
                                         <a className="ms-3" href="#!" onClick={handleSendMessage}>
                                             <img src="https://cdn-icons-png.flaticon.com/128/16273/16273684.png" alt=""
                                                  style={{width: '30px', height: '30px'}}/>

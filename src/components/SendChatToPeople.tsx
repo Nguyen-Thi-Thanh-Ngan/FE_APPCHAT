@@ -40,7 +40,7 @@ export const sendChatToPeople = (
                     data: {
                         type: 'people',
                         to: getPeopleQuery,
-                        mes: messageValue,
+                        mes: encodeURIComponent(messageValue),
                     },
                 },
             };
@@ -53,7 +53,7 @@ export const sendChatToPeople = (
             const newMessage: ChatData = {
                 id: result.data.id,
                 name: result.data.name,
-                mes: result.data.mes,
+                mes: decodeURIComponent(result.data.mes),
                 createAt: result.data.createAt,
             };
 
